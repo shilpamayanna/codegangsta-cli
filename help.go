@@ -18,8 +18,8 @@ AUTHOR(S):
 	{{range .Authors}}{{ . }} {{end}}
 
 COMMANDS:
-   {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
-   {{end}}{{if .Flags}}
+{{range .Commands}}{{if not .Hidden}}    {{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}{{ "\n" }}{{end}}{{end}}{{if .Flags}}
+
 GLOBAL OPTIONS:
    {{range .Flags}}{{.}}
    {{end}}{{end}}
@@ -39,7 +39,7 @@ DESCRIPTION:
 
 OPTIONS:
    {{range .Flags}}{{.}}
-   {{end}}{{ end }}
+   {{end}}{{end}}
 `
 
 // The text template for the subcommand help topic.
@@ -52,8 +52,8 @@ USAGE:
    {{.Name}} command{{if .Flags}} [command options]{{end}} [arguments...]
 
 COMMANDS:
-   {{range .Commands}}{{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}
-   {{end}}{{if .Flags}}
+{{range .Commands}}{{if not .Hidden}}    {{.Name}}{{with .ShortName}}, {{.}}{{end}}{{ "\t" }}{{.Usage}}{{ "\n" }}{{end}}{{end}}{{if .Flags}}
+
 OPTIONS:
    {{range .Flags}}{{.}}
    {{end}}{{end}}
@@ -102,6 +102,9 @@ func ShowAppHelp(c *Context) {
 // Prints the list of subcommands as the default app completion method
 func DefaultAppComplete(c *Context) {
 	for _, command := range c.App.Commands {
+		if command.Hidden {
+			continue
+		}
 		fmt.Fprintln(c.App.Writer, command.Name)
 		if command.ShortName != "" {
 			fmt.Fprintln(c.App.Writer, command.ShortName)
